@@ -1,4 +1,4 @@
-# Bitcoin Puzzle Bruteforce
+# Bitcoin Puzzle Bruteforce (Multithreaded)
 
 ## Introduction
 This program has for goal to bruteforce the following puzzle :
