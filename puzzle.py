@@ -4,7 +4,6 @@ import binascii
 import hashlib
 import base58
 import random
-import threading
 import time
 import codecs
 import multiprocessing
