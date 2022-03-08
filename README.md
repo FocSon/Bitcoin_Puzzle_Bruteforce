@@ -40,7 +40,12 @@ num_of_temp_file = 100
 #The searched address
 pub_addr_searched = "16jY7qLJnxb7CHZyqBP8qca9d51gAjyXQN"
 
-# Range in wich you want to search the address
+# Private key range in which you want to search the address (the private key will automatically be completed with 0 before ex: 00[...]00ffffffffffffffff)
 start = "8000000000000000"
 end = "ffffffffffffffff"
 ```
+
+## Donations
+If this program help you or if it make you win some money here is my BTC address.. We never know ;)
+bc1qpst40fj88652akszrr2w2unfwl37kgdm5d7pfj
+
