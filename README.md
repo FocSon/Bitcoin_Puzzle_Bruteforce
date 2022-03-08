@@ -5,10 +5,17 @@ This program has for goal to bruteforce the following puzzle :
 https://privatekeyfinder.io/bitcoin-puzzle/
 
 ## Installation
+This script is written, in python3
 To use this script, you'll need to install git and pip.
 Then, run this command to install all required libraries.
 ```shell
-pip install -r requirements.txt
+pip3 install -r requirements.txt
+```
+
+## Run it
+As it is a verry long process, I strongly recommand you to run this command with nohup
+```shell
+nohup python3 puzzle.py &
 ```
 
 ## Parameters
