@@ -15,10 +15,10 @@ from cryptotools.BTC import PrivateKey, Address
 need_setup_dataset = True
 
 # Number of thread (max 2 per core, more will be useless)
-nb_thread_max = 3
+nb_thread_max = 8
 
 # Number of address that a unique thread will have to process (WARNING : the lower this value is, the bigger the dataset will be)
-addr_per_thread = 7000000000
+addr_per_thread = 70
 
 #Number of temp file to create (the higher this value is, the lower RAM is used)
 num_of_temp_file = 100
@@ -27,8 +27,8 @@ num_of_temp_file = 100
 pub_addr_searched = "16jY7qLJnxb7CHZyqBP8qca9d51gAjyXQN"
 
 # Range in wich you want to search the address
-start = "8000000000000000"
-end = "ffffffffffffffff"
+start = "0"
+end = "fffff"
 
 
 
@@ -85,11 +85,14 @@ def thread_f(start_l, thread_no):
 
 		# Getting the current private key
 		current = ""
-		for e in range(64 - len(start_l)):
-			current = current + "0"
-		current = current + str(hex(int(start_l,16) + e)[2:])
+
+		current = str(hex(int(start_l,16) + e)[2:])
+
+		while(len(current) < 64):
+			current = "0" + current
 
 		#Searching the address associated
+		print(current[2:])
 		addrp2pkh = (get_addr(current)[2:])[:-1]
 
 		# If you find the result, it will be written in this file 
@@ -105,17 +108,22 @@ def setup_dataset(from_file_no = 0, to_file_no = num_of_temp_file):
 	# Create a dataset and shuffle it
 	# If you have a memory error in this part, you can increase the value of the num_of_temp_file variable
 
-	print("Seting up dataset ..")
+	print("Seting up dataset from file " + str(from_file_no) + " to file " + str(to_file_no) + "..")
 
-	from_addr = int(start, 16) + addr_per_thread * from_file_no
-	to_addr = int(start, 16) + addr_per_thread * to_file_no
+	step = int((int(end, 16) - int(start, 16)) / num_of_temp_file)
+	from_addr = step * from_file_no + int(start, 16)
+	to_addr = step * to_file_no + int(start, 16) - 1
+
+	print(from_addr, to_addr)
 
 	files = []
+	file_selected = 0
 	for e in range(from_file_no, to_file_no):
 		files.append(open("todo_" + str(e) + ".txt", "w"))
 
 	for e in range(from_addr, to_addr, addr_per_thread):
-		files[int((e-from_addr)/addr_per_thread)%num_of_temp_file].write(hex(e)[2:]+"\n")
+		files[file_selected].write(hex(e)[2:]+"\n")
+		file_selected = 0 if file_selected == (to_file_no - from_file_no)-1  else file_selected+1
 
 	for e in range(0, to_file_no-from_file_no):
 		files[e].close()
@@ -152,7 +160,8 @@ def join_dataset(from_file_no = 0, to_file_no = num_of_temp_file):
 	# We randomly read these values and apend it to the main file
 	todo_file = open("todo.txt", "w")
 	while len(file_iterators) > 0:
-		file_iterator = file_iterators[random.randint(0, len(file_iterators)-1)]
+		file_no = random.randint(0, len(file_iterators)-1)
+		file_iterator = file_iterators[file_no]
 		try:
 			line = next(file_iterator)
 
@@ -209,7 +218,7 @@ if __name__ == "__main__":
 		line = next(todo_f)[:-1]
 
 		if len(thread_l) != nb_thread_max:
-			print(count, "/", nomber_ite)
+			#print(count, "/", nomber_ite)
 			x = multiprocessing.Process(target=thread_f, args=(line,len(thread_l),))
 			x.start()
 			thread_l.append(x)
