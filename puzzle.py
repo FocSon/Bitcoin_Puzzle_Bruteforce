@@ -92,7 +92,6 @@ def thread_f(start_l, thread_no):
 			current = "0" + current
 
 		#Searching the address associated
-		print(current[2:])
 		addrp2pkh = (get_addr(current)[2:])[:-1]
 
 		# If you find the result, it will be written in this file 
@@ -113,8 +112,6 @@ def setup_dataset(from_file_no = 0, to_file_no = num_of_temp_file):
 	step = int((int(end, 16) - int(start, 16)) / num_of_temp_file)
 	from_addr = step * from_file_no + int(start, 16)
 	to_addr = step * to_file_no + int(start, 16) - 1
-
-	print(from_addr, to_addr)
 
 	files = []
 	file_selected = 0
@@ -218,7 +215,7 @@ if __name__ == "__main__":
 		line = next(todo_f)[:-1]
 
 		if len(thread_l) != nb_thread_max:
-			#print(count, "/", nomber_ite)
+			print(count, "/", nomber_ite)
 			x = multiprocessing.Process(target=thread_f, args=(line,len(thread_l),))
 			x.start()
 			thread_l.append(x)
