@@ -18,19 +18,17 @@ need_setup_dataset = True
 nb_thread_max = 8
 
 # Number of address that a unique thread will have to process (WARNING : the lower this value is, the bigger the dataset will be)
-addr_per_thread = 70
+addr_per_thread = 7000
 
 #Number of temp file to create (the higher this value is, the lower RAM is used)
-num_of_temp_file = 100
+num_of_temp_file = 10
 
 #The searched address
-pub_addr_searched = "16jY7qLJnxb7CHZyqBP8qca9d51gAjyXQN"
+pub_addr_searched = "13zb1hQbWVsc2S7ZTZnP2G4undNNpdh5so"
 
 # Range in wich you want to search the address
-start = "0"
-end = "fffff"
-
-
+start = "1"
+end = "186A00"
 
 nomber_ite = int((int(end, 16) - int(start, 16))/addr_per_thread)
 
@@ -71,7 +69,7 @@ def get_addr(private_key):
 
 	return str(base58.b58encode( bytes(bytearray.fromhex(key_hash + checksum))))
 
-def thread_f(start_l, thread_no):
+def thread_f(start_l, thread_no, q):
 	# Progress bar
 	progress = -0.01
 
@@ -84,8 +82,6 @@ def thread_f(start_l, thread_no):
 			f.close()
 
 		# Getting the current private key
-		current = ""
-
 		current = str(hex(int(start_l,16) + e)[2:])
 
 		while(len(current) < 64):
@@ -101,13 +97,15 @@ def thread_f(start_l, thread_no):
 			f.close()
 			print("found")
 
+	q.put((thread_no, "finished"))
+
 	return
 
 def setup_dataset(from_file_no = 0, to_file_no = num_of_temp_file):
 	# Create a dataset and shuffle it
 	# If you have a memory error in this part, you can increase the value of the num_of_temp_file variable
 
-	print("Seting up dataset from file " + str(from_file_no) + " to file " + str(to_file_no) + "..")
+	print("Setting up dataset from file " + str(from_file_no) + " to file " + str(to_file_no) + "..")
 
 	step = int((int(end, 16) - int(start, 16)) / num_of_temp_file)
 	from_addr = step * from_file_no + int(start, 16)
@@ -180,6 +178,9 @@ def join_dataset(from_file_no = 0, to_file_no = num_of_temp_file):
 	print("Done !")
 
 if __name__ == "__main__":
+	
+	time1 = time.time()
+
 	thread_l = []
 
 	if need_setup_dataset:
@@ -210,18 +211,23 @@ if __name__ == "__main__":
 
 	todo_f = open("todo.txt", 'r')
 	count = 0
+	active_t = 0
+	q = multiprocessing.SimpleQueue()
 
 	for count in range(0, nomber_ite+1):
 		line = next(todo_f)[:-1]
 
-		if len(thread_l) != nb_thread_max:
+		if active_t != nb_thread_max:
 			print(count, "/", nomber_ite)
-			x = multiprocessing.Process(target=thread_f, args=(line,len(thread_l),))
+			x = multiprocessing.Process(target=thread_f, args=(line, active_t, q,))
 			x.start()
-			thread_l.append(x)
+			active_t+=1
 
 		else:
-			for x in thread_l:
-				x.join()
-			thread_l = []
+			q.get()
 			count-=1
+			active_t-=1
+
+	
+	time2 = time.time()
+	print('%s function took', (time2-time1)*1000.0, 'ms')
